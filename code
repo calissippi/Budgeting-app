@@ -1,0 +1,115 @@
+class Category:
+#     create budget object
+  def __init__(self, name):
+    self.ledger = []
+    self.name = name
+    self.balance = 0
+
+#     add cash
+  def deposit(self, amount, description = None):
+    if description == None:
+      description = ""
+    self.ledger.append({"amount": amount, "description" : description})
+    self.balance += amount
+
+  def withdraw(self, money_out, description = None):
+#         check if self is needed below!!!!!!!!!!!!!!!!!
+    if self.check_funds(money_out) == True:
+      if description == None:
+        description = ""
+      self.ledger.append({"amount": -money_out, "description" : description})
+      self.balance -= money_out
+      return True
+    else:
+      return False
+        
+       
+  def transfer(self, amount, to_budget):
+    if self.check_funds(amount) == True:
+      self.withdraw(amount, f"Transfer to {to_budget.name}")
+#             tranfer to self or self.name
+      to_budget.deposit(amount, f"Transfer from {self.name}")
+      return True
+    else:
+      return False
+
+  def get_balance(self):
+    return self.balance
+    
+  def check_funds(self, amount):
+    if self.balance >= amount:
+      return True
+    else:
+      return False
+        
+    
+  def __str__(self):
+    title = f"{self.name:*^30}\n"
+    items = ""
+    total = 0
+    
+    for d in range(len(self.ledger)):
+      items += f"{self.ledger[d]['description'][0:23]:23}{self.ledger[d]['amount']:>7.2f}\n"
+      total += self.ledger[d]['amount']
+    listed = title + items + f"Total: {str(total)}"
+    return listed
+
+
+# outside of class
+def create_spend_chart(budgets):
+# budgets taken as list 
+  chart = ""
+  chart += "Percentage spent by category\n"
+  spent = []
+  percent_list = []
+  names = []
+
+    
+#     geting percentage, names, and max length of name
+  max_name_len = 0
+  for each in budgets[:4]:
+    if len(each.name) > max_name_len:
+      max_name_len = len(each.name)
+    names.append(each.name)
+
+    for i in each.ledger:
+      amt = 0
+      if i["amount"] < 0:
+        amt += i["amount"]
+    spent.append(amt)
+  # print(spent)
+
+  sum_spent = sum(spent)
+  for n in spent:
+    percent = round(n / sum_spent,2)/0.01
+    percent_list.append(percent)
+  print(percent_list)
+      
+  num = 100
+  while num >= 0:
+    chart += str(num).rjust(3) + "|" + " "
+    for i in percent_list:
+      if i >= num:
+        chart += "o  "
+      else:
+        chart += " "*3
+    chart += "\n"
+    num -= 10
+      
+#         bottom line
+  chart += (" " * 4) + ("-" * (len(percent_list)**2 +1)) + "\n"
+      
+  #     budget names
+  count = 0
+  for long in range(max_name_len):
+    chart += " "*5
+    for bud in names:
+      if len(bud) - 1 < count:
+        chart += " "*3
+      else:
+        chart += bud[count] + " "*2
+    count+=1
+    if long <= max_name_len-2:
+      chart += "\n"
+   
+  return chart
